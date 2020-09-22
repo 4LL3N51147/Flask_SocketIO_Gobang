@@ -1,0 +1,13 @@
+body {
+    margin: 0;
+    background-color: #ccc;
+}
+
+canvas {
+    background-color: white;
+}
+
+#user-list {
+    border-width: 1px;
+    border-color: black;
+}
