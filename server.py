@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room
 from random import seed, random
 import logging
 log = logging.getLogger('werkzeug')
@@ -12,7 +12,7 @@ socketio = SocketIO(app)
 users = {}
 
 def createNewName(id):
-    return 'user'+id[:8]
+    return 'USER'+id[:8]
 
 @app.route('/')
 def sessions():
@@ -41,9 +41,24 @@ def disconnectHandler():
     print('User: {} has left'.format(username))
     socketio.emit('userList', users, boradcast=True)
     
-@socketio.on('create room')
-def createRoomHandler(json, methods=['GET', 'POST']):
-    print(str(json))
+@socketio.on('inviteGame')
+def inviteGameHandler(opponentId, methods=['GET', 'POST']):
+    inviteId = request.sid
+    users[inviteId]['against'] = opponentId
+    users[opponentId]['against'] = inviteId
+    # Coin toss
+    seed()
+    if random() > 0.5:
+        users[inviteId]['current'] = True
+        users[inviteId]['isBlack'] = True
+    else:
+        users[opponentId]['current'] = True
+        users[opponentId]['isBlack'] = True
+    
+    print("Start game between {} and {}".format(inviteId, opponentId))
+    socketio.emit('beginGame', users[inviteId], room=inviteId)
+    socketio.emit('beginGame', users[opponentId], room=opponentId)
+    socketio.emit('userList', users, broadcast=True)
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')

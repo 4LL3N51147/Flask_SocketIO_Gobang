@@ -4,12 +4,26 @@ var socket = io.connect('http://127.0.0.1:5000/',
 
 // The client keeps a list of all connected clients except self
 var users = {};
+var isBlack = true;
 var PLAYER_USERNAME = "";
-var FOE_USERNAME = "";
+var OPPONENT_USERNAME = "";
+
 // When the socket connects, start the game
 socket.on('connect', function() {
-    PLAYER_USERNAME = "user"+socket.id.substring(0,8);
+    PLAYER_USERNAME = "USER"+socket.id.substring(0,8);
     prompt.text(`Welcome ${PLAYER_USERNAME}`);
+});
+
+socket.on('beginGame', (json) => {
+    console.log("Begin game", json);
+    OPPONENT_USERNAME = users[json.against].name;
+    if (json.current) {
+        prompt.text("Your turn");
+    }
+    else {
+        prompt.text(`Waiting for ${OPPONENT_USERNAME} to place a stone`);
+    }
+    startGame();
 });
 
 // Upon receiving response from the server, display the message
@@ -18,16 +32,16 @@ socket.on('stone placed', function(json) {
 })
 
 socket.on('userList', function(json) {
-    console.log(json);
+    //console.log(json);
+    users = {};
     $.each(json, function(key, value) {
         if (key != socket.id) {
             users[key] = value;
         }
     });
-    updateDOMUserList(users, socket);
+    updateDOMUserList(users, socket.id, socket);
 })
 
-var btn = $("#btn");
 var canvas = $("#chessboard")[0];
 var prompt = $("#prompt");
 var context = canvas.getContext("2d");
@@ -47,8 +61,6 @@ var checkMode = [
     [1,-1],//Right diagonal
 ];
 
-btn.click(startGame);
-
 function startGame() {
     // Initialize the board state to 0s
     for(var i=0; i<19; i++){
@@ -59,7 +71,6 @@ function startGame() {
     }
     cleanChessBoard();
     drawChessBoard();
-    prompt.text("Current: "+chessColor[stepCount % 2]);
     hasWon = false;
 }
 
@@ -111,6 +122,7 @@ function isBoardPosValid(x, y) {
     }
 }
 
+// Event listener fir stone placement
 canvas.addEventListener("click", function(e) {
     if (hasWon) {
         alert("Game Over~");
@@ -148,6 +160,10 @@ canvas.addEventListener("click", function(e) {
         stepCount++;
         prompt.text("Current: "+chessColor[(stepCount) % 2]);
     } 
+});
+
+window.addEventListener('beforeunload', function(e) {
+    socket.disconnect();
 });
 
 // Check if there are already 5 of a color in a row
@@ -188,6 +204,13 @@ function checkWin(x, y, color, mode) {
     }
 }
 
+function bindInviteButtonClick(socket) {
+    $('.user-status').click(function (e) {
+        socket.emit('inviteGame', $(this).data('id'));
+        OPPONENT_USERNAME = $(this).data('name');
+    });
+}
+
 function updateDOMUserList(userList, ownId, socket) {
     var result = '';
     $.each(userList, function (index, value) {
@@ -200,8 +223,8 @@ function updateDOMUserList(userList, ownId, socket) {
         }
         if (value.against === ownId) {
             value.statusClass = 'game-with';
-            value.statusText = 'Foe';
-            FOE_USERNAME = value.name;
+            value.statusText = 'Opponent';
+            OPPONENT_USERNAME = value.name;
         }
         result += `
             <div class="user-item row align-items-center">
@@ -209,7 +232,7 @@ function updateDOMUserList(userList, ownId, socket) {
                 <button class="user-status col-4 ${value.statusClass}" data-id=${value.id} data-name=${value.name}>${value.statusText}</button>
             </div>
         `
-        
     });
     $('#user-list').html(result);
+    bindInviteButtonClick(socket);
 }
