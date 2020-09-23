@@ -1,7 +1,7 @@
 // Connect to the server socket
 var socket = io.connect('http://127.0.0.1:5000/',
 						);
-
+var chessColors = ["White", "Black"];
 // The client keeps a list of all connected clients except self
 var users = {};
 var isBlack = true;
@@ -19,7 +19,6 @@ var canvas = $("#chessboard")[0];
 var prompt = $("#prompt");
 var debug = $("#debug");
 var context = canvas.getContext("2d");
-var chessColors = ["White", "Black"];
 
 function startGame() {
 	cleanChessBoard();
@@ -50,8 +49,9 @@ function cleanChessBoard() {
 	stepCount = 0;
 }
 
+// Reset the game states
 function cleanState() {
-	isBlack = true;
+	isBlack = false;
 	PLAYER_USERNAME = "";
 	OPPONENT_USERNAME = "";
 	OPPONENT_ID = "";
@@ -70,6 +70,7 @@ function cleanState() {
 }
 
 // Draw the stone at position (x, y) and fill it with color
+// x,y is canvas coordinates
 function drawStone(x, y, color) {
 	context.beginPath();
 	context.arc(x, y, 13, 0, Math.PI*2, false);
@@ -134,6 +135,7 @@ window.addEventListener('beforeunload', function(e) {
 	socket.disconnect();
 });
 
+// Click event handling for the invite buttons in user-list
 function bindInviteButtonClick(socket) {
 	$('.user-status').click(function (e) {
 		// if the invited player is not available, reject 
@@ -158,6 +160,7 @@ function bindInviteButtonClick(socket) {
 	});
 }
 
+// Update the user list dom object and bind button clicks
 function updateDOMUserList(userList, ownId, socket) {
 	var result = '';
 	$.each(userList, function (index, value) {
@@ -184,6 +187,7 @@ function updateDOMUserList(userList, ownId, socket) {
 	bindInviteButtonClick(socket);
 }
 
+// Update the prompt info based on if it is currently your turn
 function updatePrompt() {
 	if (isCurrent) {
 		prompt.text("Your turn");
@@ -193,6 +197,7 @@ function updatePrompt() {
 	}
 }
 
+// Update debug section display
 function updateDebugInfo() {
 	result = ""
 	result += `isCurrent: ${isCurrent}<br>`;
@@ -203,6 +208,7 @@ function updateDebugInfo() {
 	result += `stepCount: ${stepCount}`;
 	debug.html(result);
 }
+
 
 
 // Socket event handling
@@ -265,6 +271,7 @@ socket.on('stone placement confirm', function(json) {
 	updatePrompt();
 });
 
+// The game is ended, ask the players if they want a rematch
 socket.on('game end', function(data) {
 	let winner = data;
 	let chessColor = chessColors[+isBlack];
