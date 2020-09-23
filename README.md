@@ -13,7 +13,9 @@ pip install flask_socketio
 ```
 
 Start the Flask server with:
-> python server.py
+```
+python server.py
+```
 
 Then players can join the lobby by opening in the browser http://127.0.0.1:5000/.
 
