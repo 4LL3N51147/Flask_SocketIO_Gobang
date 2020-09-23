@@ -22,4 +22,4 @@ Then players can join the lobby by opening in the browser http://127.0.0.1:5000/
 After there are at least 2 players in the lobby, you can invite the other player and start a game.
 
 Todos:
-- [ ] Finish my changesThe userlist becomes clipped onto the chessboard if the window size is less than 1000, causing part of the border unclickable
+- [ ] The userlist becomes clipped onto the chessboard if the window size is less than 1000, causing part of the border unclickable
