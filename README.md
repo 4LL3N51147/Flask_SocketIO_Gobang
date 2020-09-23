@@ -9,7 +9,7 @@ pip install flask
 ```
 Flask_socketio
 ```
-pip install flask_socketio
+pip install flask-socketio
 ```
 
 Start the Flask server with:
