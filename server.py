@@ -114,17 +114,11 @@ def inviteGameHandler(json, methods=['GET', 'POST']):
 			users[inviterId]['gameId'] = gameId
 			users[opponentId]['against'] = inviterId
 			users[opponentId]['gameId'] = gameId
-			# Coin toss
-			if gameId%2 == 1:
-				# users[inviteId]['current'] = True
-				users[inviterId]['isBlack'] = True
-				users[opponentId]['isBlack'] = False
-				roomStates[gameId]['currentPlayer'] = inviterId
-			else:
-				# users[opponentId]['current'] = True
-				users[opponentId]['isBlack'] = True
-				users[inviterId]['isBlack'] = False
-				roomStates[gameId]['currentPlayer'] = opponentId
+			
+			# users[inviteId]['current'] = True
+			users[inviterId]['isBlack'] = True
+			users[opponentId]['isBlack'] = False
+			roomStates[gameId]['currentPlayer'] = inviterId
 			
 			print("Start game between {} and {} in room {}".format(inviterId, opponentId, gameId))
 			socketio.emit('beginGame', users[inviterId], room=inviterId)
@@ -144,17 +138,11 @@ def inviteGameHandler(json, methods=['GET', 'POST']):
 		users[inviterId]['gameId'] = gameId
 		users[opponentId]['against'] = inviterId
 		users[opponentId]['gameId'] = gameId
-		# Coin toss
-		if gameId%2 == 1:
-			# users[inviteId]['current'] = True
-			users[inviterId]['isBlack'] = True
-			users[opponentId]['isBlack'] = False
-			roomStates[gameId]['currentPlayer'] = inviterId
-		else:
-			# users[opponentId]['current'] = True
-			users[opponentId]['isBlack'] = True
-			users[inviterId]['isBlack'] = False
-			roomStates[gameId]['currentPlayer'] = opponentId
+		
+		# users[inviteId]['current'] = True
+		users[inviterId]['isBlack'] = True
+		users[opponentId]['isBlack'] = False
+		roomStates[gameId]['currentPlayer'] = inviterId
 		
 		print("Start game between {} and {} in room {}".format(inviterId, opponentId, gameId))
 		socketio.emit('beginGame', users[inviterId], room=inviterId)
