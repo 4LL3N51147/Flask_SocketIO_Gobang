@@ -31,28 +31,168 @@ def checkUserAvailability(id):
 			return False
 	return True
 
-# Check if there are already 5 of a color in a row
-def checkWin(x, y, color, room, mode):
+def checkHoizontal(x, y, color, room):
 	connectCount = 1
 	board = room['boardState']
 
 	# count the consecutive stones on the increasing side
 	for i in range(1,5):
-		if(board[x + i*mode[0]]):
-			if(board[x + i*mode[0]][y + i*mode[1]] == color):
-				connectCount += 1
-			else:
-				break
+		if (x+i >= 19):
+			break
+		else:
+			if(board[x+i]):
+				if(board[x+i][y] == color):
+					connectCount += 1
+				else:
+					break
 
 	# count the consecutive stones on the decreasing side
 	for j in range(1,5):
-		if(board[x - j*mode[0]]):
-			if(board[x - j*mode[0]][y - j*mode[1]] == color):
-				connectCount += 1
-			else:
-				break
+		if (x-j <= 0):
+			break
+		else:
+			if(board[x-j]):
+				if(board[x-j][y] == color):
+					connectCount += 1
+				else:
+					break
+	
+	print("Horizontal {}".format(connectCount))
+	if (connectCount >= 5):
+		return True
+	else:
+		return False
+
+def checkVertical(x, y, color, room):
+	connectCount = 1
+	board = room['boardState']
+
+	# count the consecutive stones on the increasing side
+	for i in range(1,5):
+		if (y+i >= 19):
+			break
+		else:
+			if(board[x][y+i]):
+				if(board[x][y+i] == color):
+					connectCount += 1
+				else:
+					break
+
+	# count the consecutive stones on the decreasing side
+	for j in range(1,5):
+		if (y-j <= 0):
+			break
+		else:
+			if(board[x][y-j]):
+				if(board[x][y-j] == color):
+					connectCount += 1
+				else:
+					break
+	
+	print("Vertical {}".format(connectCount))
+	if (connectCount >= 5):
+		return True
+	else:
+		return False
+
+def checkLeftDiagonal(x, y, color, room):
+	connectCount = 1
+	board = room['boardState']
+
+	# count the consecutive stones on the increasing side
+	for i in range(1,5):
+		if (x+i >= 19 or y+i >= 19):
+			break
+		else:
+			if(board[x+i][y+i]):
+				if(board[x+i][y+i] == color):
+					connectCount += 1
+				else:
+					break
+
+	# count the consecutive stones on the decreasing side
+	for j in range(1,5):
+		if (x-j <= 0 or y-j <= 0):
+			break
+		else:
+			if(board[x-j][y-j]):
+				if(board[x-j][y-j] == color):
+					connectCount += 1
+				else:
+					break
+	
+	print("Left Diag {}".format(connectCount))
+	if (connectCount >= 5):
+		return True
+	else:
+		return False
+
+def checkRightDiagonal(x, y, color, room):
+	connectCount = 1
+	board = room['boardState']
+
+	# count the consecutive stones on the increasing side
+	for i in range(1,5):
+		if (x+i >= 19 or y-i <= 0):
+			break
+		else:
+			if(board[x+i][y-i]):
+				if(board[x+i][y-i] == color):
+					connectCount += 1
+				else:
+					break
+
+	# count the consecutive stones on the decreasing side
+	for j in range(1,5):
+		if (x-j <= 0 or y+j >= 19):
+			break
+		else:
+			if(board[x-j][y+j]):
+				if(board[x-j][y+j] == color):
+					connectCount += 1
+				else:
+					break
+	
+	print("Right Diag {}".format(connectCount))
+	if (connectCount >= 5):
+		return True
+	else:
+		return False
+
+# Check if there are already 5 of a color in a row
+def checkWin(x, y, color, room):
+	connectCount = 1
+	board = room['boardState']
+
+	hoizontal = checkHoizontal(x, y, color, room)
+	vertical = checkVertical(x, y, color, room)
+	leftDiag = checkLeftDiagonal(x, y, color, room)
+	rightDiag = checkRightDiagonal(x, y, color, room)
+	# # count the consecutive stones on the increasing side
+	# for i in range(1,5):
+	# 	if (x + i*mode[0])
+	# 		if(board[x + i*mode[0]]):
+	# 			if(board[x + i*mode[0]][y + i*mode[1]] == color):
+	# 				connectCount += 1
+	# 			else:
+	# 				break
+	# 	except IndexError:
+	# 		print("index out of bound with {} and {}".format(x + i*mode[0], y + i*mode[1]))
+	# 		break
+
+	# # count the consecutive stones on the decreasing side
+	# for j in range(1,5):
+	# 	try:
+	# 		if(board[x - j*mode[0]]):
+	# 			if(board[x - j*mode[0]][y - j*mode[1]] == color):
+	# 				connectCount += 1
+	# 			else:
+	# 				break
+	# 	except IndexError:
+	# 		print("index out of bound with {} and {}".format(x - j*mode[0], y - j*mode[1]))
+	# 		break
    
-	if(connectCount >= 5):
+	if(hoizontal or vertical or leftDiag or rightDiag):
 		print("{} has won".format(color))
 		room['isEnded'] = True
 		socketio.emit('game end', color, room=room['player1'])
@@ -193,8 +333,8 @@ def stonePlacedHandler(json, methods=['GET', 'POST']):
 		socketio.emit('stone placement confirm', json, room=receiverPlayerId)
 		print("stone placement confirmed")
 
-		for modeIndex in range(4):
-			checkWin(i, j, chessColor[senderIsBlack], roomStates[gameId], checkMode[modeIndex])
+		
+		checkWin(i, j, chessColor[senderIsBlack], roomStates[gameId])
 	# if board position not valid, reject the attempt
 	else:
 		return
