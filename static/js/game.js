@@ -239,6 +239,8 @@ socket.on('userList', function(json) {
 	updateDOMUserList(users, socket.id, socket);
 });
 
+// Only when a stone placement is acknowledged by the server,
+// is the stone drawn on board
 socket.on('stone placement confirm', function(json) {
 	let chessColor = "";
 	x = json.x;
@@ -258,10 +260,6 @@ socket.on('stone placement confirm', function(json) {
 
 	drawStone(x, y, chessColor);
 	board[i][j] = chessColor;
-	
-	// for(var index=0; index<4; index++) {
-	// 	checkWin(i, j, chessColor, checkMode[index]);
-	// }
 
 	stepCount++;
 	updatePrompt();
@@ -270,11 +268,14 @@ socket.on('stone placement confirm', function(json) {
 socket.on('game end', function(data) {
 	let winner = data;
 	let chessColor = chessColors[+isBlack];
-	
-
+	hasWon = true;
+	alert(winner, chessColor);
 	if (winner == chessColor) {
 		if (confirm("You have won, play it again?")) {
-			console.log(winner, chessColor);
+			socket.emit('inviteGame', {
+				id: OPPONENT_ID,
+				rematch: true
+			});
 		}
 		else {
 			return;
@@ -282,7 +283,10 @@ socket.on('game end', function(data) {
 	}
 	else {
 		if (confirm("You have lost, play it again?")) {
-			console.log(winner, chessColor);
+			socket.emit('inviteGame', {
+				id: OPPONENT_ID,
+				rematch: true
+			});
 		}
 		else {
 			return;

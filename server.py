@@ -54,6 +54,7 @@ def checkWin(x, y, color, room, mode):
    
 	if(connectCount >= 5):
 		print("{} has won".format(color))
+		room['isEnded'] = True
 		socketio.emit('game end', color, room=room['player1'])
 		socketio.emit('game end', color, room=room['player2'])
 
@@ -117,16 +118,49 @@ def inviteGameHandler(json, methods=['GET', 'POST']):
 			if gameId%2 == 1:
 				# users[inviteId]['current'] = True
 				users[inviterId]['isBlack'] = True
+				users[opponentId]['isBlack'] = False
 				roomStates[gameId]['currentPlayer'] = inviterId
 			else:
 				# users[opponentId]['current'] = True
 				users[opponentId]['isBlack'] = True
+				users[inviterId]['isBlack'] = False
 				roomStates[gameId]['currentPlayer'] = opponentId
 			
 			print("Start game between {} and {} in room {}".format(inviterId, opponentId, gameId))
 			socketio.emit('beginGame', users[inviterId], room=inviterId)
 			socketio.emit('beginGame', users[opponentId], room=opponentId)
 			socketio.emit('userList', users, broadcast=True)
+	# if a rematch is requested, start a new game in a new room
+	else:
+		seed()
+		gameId = int(random()*1000)
+		roomStates[gameId] = {}
+		roomStates[gameId]['player1'] = inviterId
+		roomStates[gameId]['player2'] = opponentId
+		roomStates[gameId]['stepCount'] = 0
+		roomStates[gameId]['boardState'] = [[0 for x in range(19)] for y in range(19)] 
+		
+		users[inviterId]['against'] = opponentId
+		users[inviterId]['gameId'] = gameId
+		users[opponentId]['against'] = inviterId
+		users[opponentId]['gameId'] = gameId
+		# Coin toss
+		if gameId%2 == 1:
+			# users[inviteId]['current'] = True
+			users[inviterId]['isBlack'] = True
+			users[opponentId]['isBlack'] = False
+			roomStates[gameId]['currentPlayer'] = inviterId
+		else:
+			# users[opponentId]['current'] = True
+			users[opponentId]['isBlack'] = True
+			users[inviterId]['isBlack'] = False
+			roomStates[gameId]['currentPlayer'] = opponentId
+		
+		print("Start game between {} and {} in room {}".format(inviterId, opponentId, gameId))
+		socketio.emit('beginGame', users[inviterId], room=inviterId)
+		socketio.emit('beginGame', users[opponentId], room=opponentId)
+		socketio.emit('userList', users, broadcast=True)
+
 
 def isBoardPosValid(x, y, boardState):
 	i = x//30-1
