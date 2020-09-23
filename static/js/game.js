@@ -276,7 +276,6 @@ socket.on('game end', function(data) {
 	let winner = data;
 	let chessColor = chessColors[+isBlack];
 	hasWon = true;
-	alert(winner, chessColor);
 	if (winner == chessColor) {
 		if (confirm("You have won, play it again?")) {
 			socket.emit('inviteGame', {
